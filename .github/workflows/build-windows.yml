@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'Tekshiruv_API_tayyor/**'
+      - 'CyberPark_GitHub_Windows_Setup_Tayyor (1).zip'
       - '.github/workflows/build-windows.yml'
 
 jobs:
@@ -17,6 +18,16 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+
+      - name: Unpack uploaded source ZIP into project folder
+        shell: pwsh
+        working-directory: .
+        run: |
+          $archive = 'CyberPark_GitHub_Windows_Setup_Tayyor (1).zip'
+          if (!(Test-Path -LiteralPath $archive)) { throw "Source ZIP missing: $archive" }
+          Expand-Archive -LiteralPath $archive -DestinationPath . -Force
+          if (!(Test-Path 'Tekshiruv_API_tayyor/requirements.txt')) { throw 'Project source missing after extraction' }
+          if (!(Test-Path 'Tekshiruv_API_tayyor/scripts/windows_verify.ps1')) { throw 'Windows verification script missing' }
 
       - name: Install Python 3.12 x64
         uses: actions/setup-python@v5
