@@ -37,7 +37,10 @@ jobs:
           $old = "        alert('Dastur oynasi ishga tushmadi. Jurnal: ' + str(log_path()))"
           $new = "        if '--smoke-test' not in sys.argv:`n            alert('Dastur oynasi ishga tushmadi. Jurnal: ' + str(log_path()))"
           if (!$src.Contains($old)) { throw 'Launcher smoke-test alert pattern missing' }
-          Set-Content -LiteralPath $launcher -Value ($src.Replace($old,$new)) -Encoding UTF8
+          $src = $src.Replace($old,$new)
+          if (!$src.Contains("log_level='warning', access_log=False")) { throw 'Uvicorn config pattern not found' }
+          $src = $src.Replace("log_level='warning', access_log=False", "log_config=None, log_level='warning', access_log=False")
+          Set-Content -LiteralPath $launcher -Value $src -Encoding UTF8
           $verify = 'scripts/windows_verify.ps1'
           $v = Get-Content -LiteralPath $verify -Raw
           if (($v.Split(' -Wait -PassThru').Count - 1) -ne 3) { throw 'Unexpected number of blocking process waits' }
