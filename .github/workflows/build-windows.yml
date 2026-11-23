@@ -49,6 +49,11 @@ jobs:
           $v = $v.Replace('if ($p.ExitCode -ne 0)', $timeout + 'if ($p.ExitCode -ne 0)')
           Set-Content -LiteralPath $verify -Value $v -Encoding UTF8
 
+      - name: Fix report export inside native Windows window
+        shell: pwsh
+        working-directory: .
+        run: python .github/patches/report_fix.py
+
       - name: Install Python 3.12 x64
         uses: actions/setup-python@v5
         with:
