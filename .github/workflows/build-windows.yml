@@ -29,6 +29,23 @@ jobs:
           if (!(Test-Path 'Tekshiruv_API_tayyor/requirements.txt')) { throw 'Project source missing after extraction' }
           if (!(Test-Path 'Tekshiruv_API_tayyor/scripts/windows_verify.ps1')) { throw 'Windows verification script missing' }
 
+      - name: Make smoke tests noninteractive and time-bounded
+        shell: pwsh
+        run: |
+          $launcher = 'desktop_webview.py'
+          $src = Get-Content -LiteralPath $launcher -Raw
+          $old = "        alert('Dastur oynasi ishga tushmadi. Jurnal: ' + str(log_path()))"
+          $new = "        if '--smoke-test' not in sys.argv:`n            alert('Dastur oynasi ishga tushmadi. Jurnal: ' + str(log_path()))"
+          if (!$src.Contains($old)) { throw 'Launcher smoke-test alert pattern missing' }
+          Set-Content -LiteralPath $launcher -Value ($src.Replace($old,$new)) -Encoding UTF8
+          $verify = 'scripts/windows_verify.ps1'
+          $v = Get-Content -LiteralPath $verify -Raw
+          if (($v.Split(' -Wait -PassThru').Count - 1) -ne 3) { throw 'Unexpected number of blocking process waits' }
+          $v = $v.Replace(' -Wait -PassThru',' -PassThru')
+          $timeout = 'if (!$p.WaitForExit(180000)) { $p.Kill(); throw "Process timed out after 180 seconds" }' + "`n"
+          $v = $v.Replace('if ($p.ExitCode -ne 0)', $timeout + 'if ($p.ExitCode -ne 0)')
+          Set-Content -LiteralPath $verify -Value $v -Encoding UTF8
+
       - name: Install Python 3.12 x64
         uses: actions/setup-python@v5
         with:
