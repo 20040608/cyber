@@ -7,6 +7,7 @@ on:
       - 'Tekshiruv_API_tayyor/**'
       - 'CyberPark_GitHub_Windows_Setup_Tayyor (1).zip'
       - '.github/workflows/build-windows.yml'
+      - '.github/patches/**'
 
 jobs:
   build-windows:
